@@ -106,11 +106,13 @@ object PageRankJob {
         hdfs + "/user/hduser/pagerank/pr", hdfs + "/user/hduser/pagerank/tmp1", hdfs + "/user/hduser/pagerank/tmp2",
         hdfs + "/user/hduser/pagerank/result")
       run(path)
-      val iter = 10
+      val iter = 3
       for (i <- 1 to iter) {
         // 迭代执行
         MatrixJob.run(path)
       }
+      val hdfsHelper = new HdfsHelper(PageRankJob.HDFS, config())
+      hdfsHelper.rename(path.tmpPr, path.result)
 
     } match {
       case NonFatal(e) => e.printStackTrace()
