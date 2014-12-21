@@ -1,19 +1,17 @@
 package com.jiaoew.pagerank
 
 import java.lang.Iterable
-import java.util
 
 import com.jiaoew.pagerank.PageRankJob.HdfsPathConfig
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{LongWritable, Text}
-import org.apache.hadoop.mapred.{JobConf, FileSplit}
-import org.apache.hadoop.mapreduce.lib.input.{FileInputFormat, TextInputFormat}
-import org.apache.hadoop.mapreduce.lib.output.{FileOutputFormat, TextOutputFormat}
-import org.apache.hadoop.mapreduce.{Job, Reducer, Mapper}
-import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec.{A, B}
+import org.apache.hadoop.mapreduce.lib.input.FileSplit
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
+import org.apache.hadoop.mapreduce.{Job, Mapper, Reducer}
 
-import scala.collection.mutable
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 
 /**
  * Created by jiaoew on 14/12/20.
@@ -22,6 +20,7 @@ import scala.collection.JavaConversions._
 class MatrixMapper extends Mapper[LongWritable, Text, Text, Text] {
 
   var flag: String = ""
+
   override def setup(context: Mapper[LongWritable, Text, Text, Text]#Context): Unit = {
     flag = context.getInputSplit.asInstanceOf[FileSplit].getPath.getParent.getName
   }
@@ -49,6 +48,7 @@ class MatrixMapper extends Mapper[LongWritable, Text, Text, Text] {
     }
   }
 }
+
 class MatrixReducer extends Reducer[Text, Text, Text, Text] {
   override def reduce(key: Text, values: Iterable[Text], context: Reducer[Text, Text, Text, Text]#Context): Unit = {
     val mapA = new mutable.HashMap[Int, Float]()
@@ -77,6 +77,7 @@ class MatrixReducer extends Reducer[Text, Text, Text, Text] {
     System.out.println(key + ":" + PageRankJob.scaleFloat(pr))
   }
 }
+
 object MatrixJob {
 
   def run(config: HdfsPathConfig) = {
@@ -94,8 +95,8 @@ object MatrixJob {
     job.setMapperClass(classOf[MatrixMapper])
     job.setReducerClass(classOf[MatrixReducer])
 
-//    job.setInputFormatClass(classOf[TextInputFormat])
-//    job.setOutputFormatClass(classOf[TextOutputFormat])
+    //    job.setInputFormatClass(classOf[TextInputFormat])
+    //    job.setOutputFormatClass(classOf[TextOutputFormat])
 
     FileInputFormat.setInputPaths(job, new Path(config.tmpMatrix), new Path(config.inputPr))
     FileOutputFormat.setOutputPath(job, new Path(config.tmpPr))
