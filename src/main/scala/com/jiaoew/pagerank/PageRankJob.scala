@@ -39,7 +39,7 @@ class PageReducer extends Reducer[Text, Text, Text, Text] {
     values foreach { pair =>
       val idx = pair.toString.toInt
       println(s"value index $idx")
-      A(idx) = 1
+      A(idx - 1) = 1
     }
     val sum = A.count(_ == 1).max(1) // 分母不能为0
 
@@ -75,6 +75,14 @@ object PageRankJob {
   def run(hdfConfig: HdfsPathConfig) = {
     val conf = config()
     val job = Job.getInstance(conf)
+
+    val hdfs = new HdfsHelper(PageRankJob.HDFS, conf)
+    hdfs.rmr(hdfConfig.input)
+    hdfs.mkdirs(hdfConfig.input)
+    hdfs.mkdirs(hdfConfig.inputPr)
+    hdfs.copyFile(hdfConfig.page, hdfConfig.input)
+    hdfs.copyFile(hdfConfig.pagerank, hdfConfig.inputPr)
+
     job.setJarByClass(PageRankJob.getClass)
 
     job.setOutputKeyClass(classOf[Text])
@@ -86,7 +94,7 @@ object PageRankJob {
 //    job.setInputFormatClass(classOf[TextInputFormat])
 //    job.setOutputFormatClass(classOf[TextOutputFormat])
 
-    FileInputFormat.setInputPaths(job, new Path(hdfConfig.page))
+    FileInputFormat.setInputPaths(job, new Path(hdfConfig.input))
     FileOutputFormat.setOutputPath(job, new Path(hdfConfig.tmpMatrix))
 
     job.waitForCompletion(true)

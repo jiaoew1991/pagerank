@@ -18,6 +18,23 @@ class HdfsHelper(hdfsPath: String, jobConf: JobConf) {
     fs.close()
   }
 
+  def mkdirs(folder: String) = {
+    val path = new Path(folder)
+    val fs = FileSystem.get(URI.create(hdfsPath), jobConf)
+    if (!fs.exists(path)) {
+      fs.mkdirs(path)
+      println("Create: " + folder)
+    }
+    fs.close()
+  }
+
+  def copyFile(local: String, remote: String) = {
+    val fs = FileSystem.get(URI.create(hdfsPath), jobConf)
+    fs.copyFromLocalFile(new Path(local), new Path(remote))
+    println("copy from: " + local + " to " + remote)
+    fs.close()
+  }
+
   def rename(src: String, dst: String) = {
     val name1 = new Path(src)
     val name2 = new Path(dst)
