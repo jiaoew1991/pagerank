@@ -53,7 +53,7 @@ class PageReducer extends Reducer[Text, Text, Text, Text] {
 }
 object PageRankJob {
 
-  case class HdfsPathConfig(page: String, pagerank: String, input: String, inputPr: String, tmpMatrix: String, tmpPr: String, result: String)
+  case class HdfsPathConfig(page: String, pagerank: String, rootPath: String, inputPage: String, inputPr: String, tmpMatrix: String, tmpPr: String, result: String)
 
   val DELIMITER = Pattern.compile("[\t,]")
   val PAGE_NUMS = 4
@@ -77,10 +77,11 @@ object PageRankJob {
     val job = Job.getInstance(conf)
 
     val hdfs = new HdfsHelper(PageRankJob.HDFS, conf)
-    hdfs.rmr(hdfConfig.input)
-    hdfs.mkdirs(hdfConfig.input)
+    hdfs.rmr(hdfConfig.rootPath)
+    hdfs.mkdirs(hdfConfig.rootPath)
+    hdfs.mkdirs(hdfConfig.inputPage)
     hdfs.mkdirs(hdfConfig.inputPr)
-    hdfs.copyFile(hdfConfig.page, hdfConfig.input)
+    hdfs.copyFile(hdfConfig.page, hdfConfig.inputPage)
     hdfs.copyFile(hdfConfig.pagerank, hdfConfig.inputPr)
 
     job.setJarByClass(PageRankJob.getClass)
@@ -94,7 +95,7 @@ object PageRankJob {
 //    job.setInputFormatClass(classOf[TextInputFormat])
 //    job.setOutputFormatClass(classOf[TextOutputFormat])
 
-    FileInputFormat.setInputPaths(job, new Path(hdfConfig.input))
+    FileInputFormat.setInputPaths(job, new Path(hdfConfig.inputPage))
     FileOutputFormat.setOutputPath(job, new Path(hdfConfig.tmpMatrix))
 
     job.waitForCompletion(true)
@@ -103,8 +104,8 @@ object PageRankJob {
     val hdfs = if (System.getProperty("hdfs") != null) System.getProperty("hdfs") else ""
     Try {
       val path = HdfsPathConfig("res/pagerank/page.csv", "res/pagerank/pr.csv", hdfs + "/user/hduser/pagerank",
-        hdfs + "/user/hduser/pagerank/pr", hdfs + "/user/hduser/pagerank/tmp1", hdfs + "/user/hduser/pagerank/tmp2",
-        hdfs + "/user/hduser/pagerank/result")
+        hdfs + "/user/hduser/pagerank/page", hdfs + "/user/hduser/pagerank/pr", hdfs + "/user/hduser/pagerank/tmp1",
+        hdfs + "/user/hduser/pagerank/tmp2", hdfs + "/user/hduser/pagerank/result")
       run(path)
       val iter = 3
       for (i <- 1 to iter) {
