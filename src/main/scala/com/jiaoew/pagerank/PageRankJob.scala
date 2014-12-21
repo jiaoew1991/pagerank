@@ -28,6 +28,7 @@ class PageMapper extends Mapper[LongWritable, Text, Text, Text] {
     val k = new Text(tokens(0))
     val v = new Text(tokens(1))
     context.write(k, v)
+    println(s"key: $k, values: $v")
   }
 }
 import PageRankJob._
@@ -37,6 +38,7 @@ class PageReducer extends Reducer[Text, Text, Text, Text] {
     val A = Array.fill(PAGE_NUMS)(0.0f) // 近邻矩阵列
     values foreach { pair =>
       val idx = pair.toString.toInt
+      println(s"value index $idx")
       A(idx) = 1
     }
     val sum = A.count(_ == 1).max(1) // 分母不能为0
