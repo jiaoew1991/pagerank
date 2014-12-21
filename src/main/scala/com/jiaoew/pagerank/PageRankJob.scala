@@ -90,7 +90,7 @@ object PageRankJob {
     job.waitForCompletion(true)
   }
   def main(args: Array[String]) {
-    val hdfs = if (System.getProperty("hdfs") != null) System.getProperty("hdfs") else HDFS
+    val hdfs = if (System.getProperty("hdfs") != null) System.getProperty("hdfs") else ""
     Try {
       val path = HdfsPathConfig("res/pagerank/page.csv", "res/pagerank/pr.csv", hdfs + "/user/hduser/pagerank",
         hdfs + "/user/hduser/pagerank/pr", hdfs + "/user/hduser/pagerank/tmp1", hdfs + "/user/hduser/pagerank/tmp2",
@@ -101,7 +101,6 @@ object PageRankJob {
         // 迭代执行
         MatrixJob.run(path)
       }
-      NormalizeJob.run(path)
 
     } match {
       case NonFatal(e) => e.printStackTrace()
